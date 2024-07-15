@@ -1,0 +1,5 @@
+[[exchanges]]
+name = "binance"
+ws_endpoint = "wss://stream.binance.com:9443"
+rest_endpoint = "https://api.binance.com"
+symbols = ["BTCUSDT"]
