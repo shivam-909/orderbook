@@ -45,10 +45,8 @@ impl OrderBookOperations for BTreeOrderBook {
         };
 
         if vol.is_zero() {
-            // println!("Removing order book entry with price: {}", price);
             book.remove(&price);
         } else {
-            // println!("Updating order book with price: {}, volume: {}", price, vol);
             book.insert(price, vol);
         }
     }
