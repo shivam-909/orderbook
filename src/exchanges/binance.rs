@@ -102,6 +102,12 @@ impl BinanceConnector {
         Ok(snapshot_bytes)
     }
 
+    // Retrieves snapshot and applies updates to entire orderbook
+    // Orderbook is assumed to contain relevant updates at every price level
+    // That is, if the connection was to drop and a snapshot was reapplied
+    // There would be no missing updates that would lead to old data being retained
+    // in the orderbook, since the orderbook is not cleared every time a snapshot
+    // is applied.
     async fn initialize_book_from_snapshot<O: OrderBookOperations + 'static>(
         &self,
         snapshot_bytes: &[u8],
@@ -135,6 +141,9 @@ impl BinanceConnector {
         Ok(())
     }
 
+    // Reads WebSocket events and continuously reads raw bytes into transaction
+    // channel as a defined event.
+    // Until read, events will be buffered in the channel.
     async fn receive_events(
         &self,
         symbol: &str,
@@ -196,6 +205,7 @@ impl BinanceConnector {
         Ok(())
     }
 
+    // Reads events (buffered or live) from the transaction channel and applies updates
     async fn process_events<O: OrderBookOperations + 'static>(
         &self,
         mut rx: mpsc::UnboundedReceiver<ConnectorEvent>,
@@ -260,6 +270,7 @@ impl BinanceConnector {
         Ok(())
     }
 
+    // Spawns WebSocket handler, applies snapshot update, and spawns event handler.
     async fn initialize_and_process_events<O: OrderBookOperations + 'static>(
         &self,
         order_book: Arc<O>,
