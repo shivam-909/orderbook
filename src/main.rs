@@ -24,26 +24,32 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     for exchange in cfg.exchanges {
         match exchange.name.as_str() {
             "binance" => {
+
+                // Create connector
                 let connector = Arc::new(BinanceConnector::new(
                     exchange.ws_endpoint.clone(),
                     exchange.rest_endpoint.clone(),
                 ));
 
                 for symbol in exchange.symbols {
+                    // Create orderbook
                     let order_book = Arc::new(BTreeOrderBook::new());
 
+                    // Manages connection and reconnection
                     let connector_manager =
                         ConnectorManager::new(connector.clone(), order_book.clone());
 
+                    // Spawn connector task to handle updates
                     let book_handle = tokio::spawn({
                         let symbol = symbol.clone();
                         async move {
                             connector_manager.run(&symbol).await;
                         }
                     });
-
+                    
                     handles.push(book_handle);
 
+                    // Spawn task to continuously read and log orderbook updates
                     let log_handle = tokio::spawn({
                         let order_book = order_book.clone();
                         let symbol = symbol.clone();
