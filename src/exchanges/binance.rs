@@ -5,19 +5,26 @@ use futures::StreamExt;
 use rand::{self, Rng};
 use rust_decimal::Decimal;
 use serde::Deserialize;
-use std::{error::Error, str::FromStr, sync::Arc};
+use std::{error::Error, io::Read, str::FromStr, sync::Arc};
 use tokio::sync::mpsc;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use url::Url;
 
 #[derive(Deserialize)]
 struct DepthUpdateEvent {
+    #[serde(rename = "e")]
     _e: String, // Event type
-    _t: u64,    // Event time
+    #[serde(rename = "E")]
+    _t: u64, // Event time
+    #[serde(rename = "s")]
     _s: String, // Symbol
+    #[serde(rename = "U")]
     first_update_id: u64,
+    #[serde(rename = "u")]
     final_update_id: u64,
+    #[serde(rename = "b")]
     b: Vec<(String, String)>, // Bids to be updated
+    #[serde(rename = "a")]
     a: Vec<(String, String)>, // Asks to be updated
 }
 
@@ -174,7 +181,7 @@ impl BinanceConnector {
                         };
 
                         // Simulate a connection drop
-                        if rand::thread_rng().gen_bool(0.1) {
+                        if rand::thread_rng().gen_bool(0.0001) {
                             println!("Simulated connection drop!");
                             let _ = tx.send(ConnectorEvent::Error(ConnectorError::SimulatedDrop));
                             return;
